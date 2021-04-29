@@ -6,6 +6,7 @@ mongoclient = pymongo.MongoClient("mongodb+srv://mydb:amit955raja@cluster0.gwlqy
 db = mongoclient["mydb2"]
 col = db["users"]
 colG = db["groups"]
+colC = db["chats"]
 connections = {}
 def newConnection(c):
     c.send("Enter HELP to see commands\n".encode())
@@ -83,6 +84,7 @@ def newConnection(c):
                 else:
                     col.update_one({ "username" : username},{ "$push": { "friends":  message[1]} })
                     col.update_one({ "username" : message[1]},{ "$push": { "friends":  username} })
+                    colC.insert_one({"type" : "userToUser", "name" : username + "&" + message[1], "sender" : [], "message" : []})
                     c.send(("Added " + message[1] + " as friend\n").encode())
         elif(message[0] == "CREATEGROUP"):
             if(username == ""):
@@ -100,6 +102,7 @@ def newConnection(c):
                 else:
                     colG.insert_one({"groupname" : message[1], "users" : [username]})
                     col.update_one({ "username" : username},{ "$push": { "groups":  message[1]} })
+                    colC.insert_one({"type" : "group", "name" : message[1], "sender" : [], "message" : []})
                     c.send(("Group " + message[1] + " created\n").encode())
         elif(message[0] == "JOINGROUP"):
             if(username == ""):
@@ -198,6 +201,28 @@ def newConnection(c):
             else:
                 connectedTo = ""
                 c.send("Successfully disconnected\n".encode())
+        elif(message[0] == "HISTORY"):
+            if(username == ""):
+                c.send("Login to perform the action\n".encode())
+            elif(len(message) != 1):
+                c.send("Invalid Details\n".encode())
+            elif(connectedTo == ""):
+                c.send("Connect to user or a group to see history\n".encode())
+            else:
+                if(connectedToUser):
+                    res = colC.find({"$or" : [{ "name": username + "&" + connectedTo}, {"name": connectedTo + "&" +username}]})
+                    for chat in res:
+                        continue
+                else:
+                    res = colC.find({"name" : connectedTo})
+                    for chat in res:
+                        continue
+                
+                sender = chat["sender"]
+                messages = chat["message"]
+
+                for i in range(0, len(sender)):
+                    c.send((sender[i] + " : " + messages[i] + "\n").encode())
         else:
             if(username == ""):
                 c.send("Login to perform the action\n".encode())
@@ -206,13 +231,17 @@ def newConnection(c):
             else:
                 if(connectedToUser):
                     clist = [connectedTo]
+                    colC.update_one({"$or" : [{ "name": username + "&" + clist[0]}, {"name": clist[0] + "&" +username}]},{"$push": { "sender":  username}})
+                    colC.update_one({"$or" : [{ "name": username + "&" + clist[0]}, {"name": clist[0] + "&" +username}]},{"$push": { "message":  " ".join(message)}})
                 else:
                     res = colG.find({"groupname" : connectedTo})
                     for group in res:
                         continue
 
                     clist = group["users"]
-                
+                    colC.update_one({"name" : connectedTo},{"$push": { "sender":  username}})
+                    colC.update_one({"name" : connectedTo},{"$push": { "message":  " ".join(message)}})
+
                 for i in clist:
                     if i in connections:
                         if(i != username):
