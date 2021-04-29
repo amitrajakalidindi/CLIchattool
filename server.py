@@ -6,11 +6,13 @@ mongoclient = pymongo.MongoClient("mongodb+srv://mydb:amit955raja@cluster0.gwlqy
 db = mongoclient["mydb2"]
 col = db["users"]
 colG = db["groups"]
-
+connections = {}
 def newConnection(c):
     c.send("Enter HELP to see commands\n".encode())
     username = ""
     connectedTo = ""
+    connectedToUser = False
+    connectedToGroup = False
     while(True):
         try:
             message = (c.recv(1024)).decode().split()
@@ -22,6 +24,7 @@ def newConnection(c):
             c.send("CREATE username password  - to create a new account\n".encode())
             c.send("CONNECTUSER username      - to connect to an existing user\n".encode())
             c.send("CONNECTGROUP groupname    - to connect to an existing group\n".encode())
+            c.send("DISCONNECT                - to disconnect\n".encode())
             c.send("CREATEGROUP groupname     - to create a new group\n".encode())
             c.send("JOINGROUP groupname       - to join a group\n".encode())
             c.send("ADDFRIEND username        - to add a friend\n".encode())
@@ -41,6 +44,7 @@ def newConnection(c):
                 if(isLoggedIn):
                     username = message[1]
                     c.send(("Logged in as " + username + "\n").encode())
+                    connections[username] = c
                 else:
                     c.send("Invalid Credentials\n".encode())
         elif(message[0] == "CREATE"):
@@ -57,7 +61,8 @@ def newConnection(c):
                 else:
                     col.insert_one({"username" : message[1], "password" : message[2], "friends" : [], "groups" : []})
                     username = message[1]  
-                    c.send(("Logged in as " + username + "\n").encode())  	
+                    c.send(("Logged in as " + username + "\n").encode()) 
+                    connections[username] = c 	
         elif(message[0] == "ADDFRIEND"):
             if(username == ""):
                 c.send("Login to perform the action\n".encode())
@@ -139,8 +144,80 @@ def newConnection(c):
 
                 for i in user["groups"]:
                     c.send((i +"\n").encode())
+        elif(message[0] == "CONNECTUSER"):
+            if(username == ""):
+                c.send("Login to perform the action\n".encode())
+            elif(len(message) != 2):
+                c.send("Invalid Details\n".encode())
+            else:
+                res = col.find({"username" : username})
+                for user in res:
+                    continue
+
+                connectedTo = ""
+                connectedToUser = False
+                connectedToGroup = False
+                for i in user["friends"]:
+                    if(i == message[1]):
+                        connectedToUser = True
+                        connectedTo = message[1]
+                        break
+                
+                if(connectedTo == ""):
+                    c.send("User is not a friend\n".encode())
+                else:
+                    c.send(("Connected to " + message[1] + "\n").encode())
+        elif(message[0] == "CONNECTGROUP"):
+            if(username == ""):
+                c.send("Login to perform the action\n".encode())
+            elif(len(message) != 2):
+                c.send("Invalid Details\n".encode())
+            else:
+                res = col.find({"username" : username})
+                for user in res:
+                    continue
+                
+                connectedTo = ""
+                connectedToUser = False
+                connectedToGroup = False
+                for i in user["groups"]:
+                    if(i == message[1]):
+                        connectedToGroup = True
+                        connectedTo = message[1]
+                        break
+                
+                if(connectedTo == ""):
+                    c.send("Join the group to send messages\n".encode())
+                else:
+                    c.send(("Connected to " + message[1] + "\n").encode())
+        elif(message[0] == "DISCONNECT"):
+            if(len(message) != 1):
+                c.send("Invalid Details\n".encode())
+            elif(connectedTo == ""):
+                c.send("Your are not connected to any user or group\n".encode())
+            else:
+                connectedTo = ""
+                c.send("Successfully disconnected\n".encode())
         else:
-            c.send("MESSAGE".encode())
+            if(username == ""):
+                c.send("Login to perform the action\n".encode())
+            elif(connectedTo == ""):
+                c.send("You are not connected to any user or group\n".encode())
+            else:
+                if(connectedToUser):
+                    clist = [connectedTo]
+                else:
+                    res = colG.find({"groupname" : connectedTo})
+                    for group in res:
+                        continue
+
+                    clist = group["users"]
+                
+                for i in clist:
+                    if i in connections:
+                        if(i != username):
+                            connections[i].send((username + " : " + " ".join(message) + "\n").encode())
+                    
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         
@@ -152,6 +229,7 @@ s.listen(5)
 print ("socket is listening")            
 while True: 
     c, addr = s.accept()    
+    print("Connection received from" , addr)
     t = threading.Thread(target=newConnection, args=(c,), daemon = True)
     t.start()
-    t.join()
+    print("Connection successful")
