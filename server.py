@@ -1,8 +1,8 @@
 import threading
 import socket 
 import pymongo
-import dns
-mongoclient = pymongo.MongoClient("mongodb+srv://mydb:amit955raja@cluster0.gwlqy.mongodb.net/mydb2?retryWrites=true&w=majority")
+#import dns
+mongoclient = pymongo.MongoClient("mongodb+srv://amruthkumar:amruthkumar@cluster0.xa7aq.mongodb.net/mydb?retryWrites=true&w=majority")
 db = mongoclient["mydb2"]
 col = db["users"]
 colG = db["groups"]
@@ -245,8 +245,10 @@ def newConnection(c):
                 for i in clist:
                     if i in connections:
                         if(i != username):
-                            connections[i].send((username + " : " + " ".join(message) + "\n").encode())
-                    
+                            try:
+                                connections[i].send((username + " : " + " ".join(message) + "\n").encode())
+                            except:
+                                print(connections[i])
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         
