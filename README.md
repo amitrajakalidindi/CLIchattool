@@ -18,6 +18,6 @@ All these actions can be perfomed using some specific messages.
 <details>
   <summary>clickhere.png</summary>
   
-   ![display](Images/screenshot.PNG)
+   ![display](images/abcd.png)
    
 </details>
