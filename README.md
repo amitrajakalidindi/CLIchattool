@@ -10,7 +10,7 @@ It has sockets at server and client side which are used for sending messages.
 ## How it works
 There is a server socket which keeps on listeing to a specific port. Client server will be connected to that port. 
 Once the connection is succesful client can REGISTER/LOGIN to start chatting.
-Multithreading at server side is used to handle multiple clients. At client side it is used for sending and receving messages.<br><br>
+**Multithreading** at server side is used to handle multiple clients. At client side it is used for sending and receving messages.<br><br>
 Initially client has to create a unique username for the first time. 
 Later he can use it whenever he wants to chat. If two clients wants to communicate they have to be connected to each other. MongoDB is used for storing the chat history.
 All these actions can be perfomed using some specific messages.
@@ -19,5 +19,15 @@ All these actions can be perfomed using some specific messages.
   <summary>clickhere.png</summary>
   
    ![display](images/abcd.png)
+   
+</details>
+
+## Socket Programming
+Socket Programming is a way of connecting two nodes on a network to communicate with each other. Here Datagram Sockets are used, that enable communication using UDP protocol. 
+This picture gives a brief idea of Socket Programming using UDP. 
+<details>
+  <summary>UDPSockets</summary>
+  
+   ![display](images/UDPsockets.jpg)
    
 </details>
