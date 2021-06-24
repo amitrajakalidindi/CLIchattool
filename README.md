@@ -28,6 +28,6 @@ This picture gives a brief idea of Socket Programming using TCP.
 <details>
   <summary>TCPSockets</summary>
   
-   ![display](images/TCPsockets.png)
+   ![display](images/TCPsockets.PNG)
    
 </details>
