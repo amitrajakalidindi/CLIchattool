@@ -23,11 +23,11 @@ All these actions can be perfomed using some specific messages.
 </details>
 
 ## Socket Programming
-Socket Programming is a way of connecting two nodes on a network to communicate with each other. Here Datagram Sockets are used, that enable communication using UDP protocol. 
-This picture gives a brief idea of Socket Programming using UDP. 
+Socket Programming is a way of connecting two nodes on a network to communicate with each other. Here Datagram Sockets are used, that enable communication using TCP protocol. 
+This picture gives a brief idea of Socket Programming using TCP. 
 <details>
-  <summary>UDPSockets</summary>
+  <summary>TCPSockets</summary>
   
-   ![display](images/UDPsockets.jpg)
+   ![display](images/TCPsockets.png)
    
 </details>
