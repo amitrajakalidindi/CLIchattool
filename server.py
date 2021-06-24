@@ -2,7 +2,7 @@ import threading
 import socket 
 import pymongo
 #import dns
-mongoclient = pymongo.MongoClient("mongodb+srv://amruthkumar:amruthkumar@cluster0.xa7aq.mongodb.net/mydb?retryWrites=true&w=majority")
+mongoclient = pymongo.MongoClient("mongodb+srv://mydb:******@cluster0.xa7aq.mongodb.net/mydb?retryWrites=true&w=majority")
 db = mongoclient["mydb2"]
 col = db["users"]
 colG = db["groups"]
